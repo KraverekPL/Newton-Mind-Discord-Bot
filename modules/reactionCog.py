@@ -14,13 +14,13 @@ async def get_response_from_openai(enable_ai, message, open_ai_model):
         open_ai_service = OpenAIService(open_ai_model)
         response_from_ai = open_ai_service.chat_with_gpt(message)
         if response_from_ai is not None:
-            await message.channel.send(response_from_ai)
+            await message.reply(response_from_ai)
             logging.info(f"Response from OpenAi with msg: {message.content.strip()}:{response_from_ai}")
         else:
-            await message.channel.send('Nie wiem :(')
+            await message.reply('Nie wiem,')
             logging.info(f"Message was too long. Skipping API call.")
     else:
-        await message.channel.send('Nie wiem :(')
+        await message.reply('Nie wiem.')
         logging.info(f"OpenAi API is turned off. Sending default message.")
 
 
