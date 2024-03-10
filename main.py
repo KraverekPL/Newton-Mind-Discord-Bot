@@ -67,14 +67,16 @@ def choose_activity():
         return discord.ActivityType.playing, []
 
 
-def read_file_lines(filename):
-    try:
-        with open(filename, 'r', encoding='utf-8') as file:
-            lines = [line.strip() for line in file.readlines() if line.strip()]
-        return lines
-    except FileNotFoundError:
-        print(f"Error: File '{filename}' not found.")
-        return []
+@bot.command(name='exit', help='Wyłącza bota')
+async def exit_bot(ctx):
+    allowed_user_id = os.getenv('target_user_id')  # Zastąp to właściwym ID użytkownika
+    if ctx.author.id == int(allowed_user_id):
+        logging.info("Bot was closed by creator.")
+        await ctx.send('Bot zostanie teraz wyłączony.')
+        await bot.close()
+    else:
+        await ctx.send('Nie masz uprawnień do tej komendy.')
+        logging.info(f"There was an attempt to disable the bot by the user: {ctx.author.id}")
 
 
 async def main():

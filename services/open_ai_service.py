@@ -143,8 +143,8 @@ def can_guild_send_message(guild_id):
 
     if today not in guild_data:
         guild_data[today] = 0
-    logging.info(f'max_number_msg = {max_number_msg}')
-    logging.info(f'guild_data[today] = {guild_data[today]}')
+    remain_requests = int(max_number_msg)-int(guild_data[today])
+    logging.info(f'Remaining requests for guild {guild_id}: {max_number_msg}-{guild_data[today]}={remain_requests} ')
     if guild_data[today] < max_number_msg:
         guild_data[today] += 1
         with open(file_path, 'w', encoding='utf-8') as file:
@@ -236,7 +236,7 @@ class OpenAIService(commands.Cog):
         user_id_to_check = message.author.id
         guild_id = message.guild.id
         try:
-            max_openai_length = 200
+            max_openai_length = 250
             if len(message.content.strip()) > max_openai_length:
                 return None
             elif not can_user_send_message(user_id_to_check):
