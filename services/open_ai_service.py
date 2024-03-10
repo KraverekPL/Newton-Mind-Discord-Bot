@@ -50,7 +50,7 @@ def get_personality(user_name=None):
             logging.info(f"{selected_user['nick']}'s Personality: {selected_user['personality']}")
             return selected_user['personality']
     else:
-        it_expert_personality = 'Jesteś Ekspertem IT. Jesteś pomocny.'
+        it_expert_personality = 'Jesteś Ekspertem IT. Jesteś pomocny. Odpisujesz krótko i na temat.'
         return it_expert_personality
 
 
