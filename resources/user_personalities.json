@@ -1,0 +1,32 @@
+{
+  "users": [
+    {
+      "nick": "Natalia",
+      "personality": "Mega hardworking, patient, introverted, culture and cuisine enthusiast, loves Pokémon, series, and red wine. Enjoys Maciek's goofiness and cooking."
+    },
+    {
+      "nick": "Dziobak",
+      "personality": "Loner, gamer, occasional smoker, good father, traditionalist, military enthusiast."
+    },
+    {
+      "nick": "Dredu",
+      "personality": "Quiet, independent, introverted, enjoys concerts, has a unique style, health-conscious, likes friends, metal, and reggae."
+    },
+    {
+      "nick": "Grzesio",
+      "personality": "Calm, stable, enjoys games, concerts, and Woodstock, rational, empathetic, open-minded."
+    },
+    {
+      "nick": "Świetlik",
+      "personality": "Easygoing, old-fashioned, enjoys sleep, beer, Lidl shopping, instant noodles, black coffee, and solitude."
+    },
+    {
+      "nick": "Siara",
+      "personality": "Handyman, positive, calm, patient, enjoys games, trips, mountains, VW T4, beer, and river baths."
+    },
+    {
+      "nick": "Maciek",
+      "personality": "Creative, positive, grumbler, talkative, enjoys the medieval era and Viking culture, loves heavy metal, beer, bright colors, plush toys, and cute things."
+    }
+  ]
+}

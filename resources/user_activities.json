@@ -1,0 +1,88 @@
+{
+  "aktywnosc": [
+    {
+      "typ": "spi",
+      "miejsce": ["łóżko", "sofa", "ławka w parku", "garaż", "praca", "hamak"]
+    },
+    {
+      "typ": "pije pwio",
+      "miejsce": ["garażu", "obok koszy", "na trzepaku", "na klatce", "w tramwaju", "ognisku"]
+    },
+    {
+      "typ": "biega",
+      "miejsce": ["las", "boisko", "plaża", "park miejski", "ulica", "góry"]
+    },
+    {
+      "typ": "szuka",
+      "miejsce": ["miasto", "sklep", "ryneczek", "centrum handlowe", "targowisko", "wysypisko śmieci"]
+    },
+    {
+      "typ": "pływa",
+      "miejsce": ["basen", "jezioro", "morze", "rzeka", "aquapark", "staw"]
+    },
+    {
+      "typ": "gotuje",
+      "miejsce": ["kuchnia", "ogród", "restauracja", "kawiarnia", "grill", "piknik"]
+    },
+    {
+      "typ": "czyta",
+      "miejsce": ["biblioteka", "kawiarnia", "dom", "park", "plaża", "góry"]
+    },
+    {
+      "typ": "gra w gry",
+      "miejsce": ["dom", "kawiarnia", "klub gier planszowych", "konsola online", "park", "przyjęcie u znajomych"]
+    },
+    {
+      "typ": "maluje",
+      "miejsce": ["atelier", "plener", "galeria sztuki", "dom", "park", "ulica"]
+    },
+    {
+      "typ": "uczy się",
+      "miejsce": ["szkoła", "kawiarnia", "biblioteka", "dom", "park", "plac zabaw"]
+    },
+    {
+      "typ": "spaceruje",
+      "miejsce": ["park", "deptak", "las", "plaża", "centrum miasta", "ogrody botaniczne"]
+    },
+    {
+      "typ": "programuje",
+      "miejsce": ["biuro", "kawiarnia", "dom", "park", "biblioteka"]
+    },
+    {
+      "typ": "pracuje",
+      "miejsce": ["ogród", "szklarnia", "taras", "działka", "park", "skwer"]
+    },
+    {
+      "typ": "majsterkuje",
+      "miejsce": ["warsztat", "dom", "sklep z narzędziami", "pracownia", "garaż", "plac budowy"]
+    },
+    {
+      "typ": "elektronika",
+      "miejsce": ["pracownia", "serwis", "sklep elektroniczny", "kurs elektroniki", "hackerspace", "laboratorium"]
+    },
+    {
+      "typ": "podróżuje",
+      "miejsce": ["miasto", "góry", "plaża", "krajobraz wiejski", "jaskinie", "muzeum"]
+    },
+    {
+      "typ": "gra na instrumentach",
+      "miejsce": ["dom", "scena", "klub muzyczny", "plac zabaw", "kawiarnia muzyczna", "amfiteatr"]
+    },
+    {
+      "typ": "sporty zespołowe",
+      "miejsce": ["boisko", "hala sportowa", "stadion", "plaża", "park", "szkoła sportowa"]
+    },
+    {
+      "typ": "griluje",
+      "miejsce": ["ogród", "taras", "działka", "plaża", "grill", "jadalnia"]
+    },
+    {
+      "typ": "fotografuje",
+      "miejsce": ["plener", "studio", "impreza", "wesele", "sesja zdjęciowa", "wydarzenie sportowe"]
+    },
+    {
+      "typ": "relaksuje się",
+      "miejsce": ["spa", "plaża", "góry", "park", "ogród", "dom"]
+    }
+  ]
+}
