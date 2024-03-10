@@ -6,7 +6,7 @@ import random
 from discord.ext import commands
 
 from services.common import load_resources_from_file, remove_polish_chars
-from ..services.open_ai_service import OpenAIService
+from services.open_ai_service import OpenAIService
 
 
 async def get_response_from_openai(enable_ai, message, open_ai_model):
@@ -43,24 +43,11 @@ class ReactionCog(commands.Cog):
                     logging.info(f"Response for scary taunt a bot with {word}:{rng_response_for_scary_taunt}")
                     return True
         return False
-
-    async def get_reaction_when_bot_is_mentioned(self, message):
-        if self.bot.user.mentioned_in(message):
-            enable_ai = os.getenv("enabled_ai", 'False').lower() in ('true', '1', 't')
-            open_ai_model = os.getenv('open_ai_model')
-            if message.content.strip() == f'<@{self.bot.user.id}>':
-                # If the message is empty and the bot is not mentioned - send friendly wake up
-                await self.send_friendly_awake(message)
-                return True
-            else:
-                # If the message has content and the bot is mentioned - send it to Open API gateway
-                await get_response_from_openai(enable_ai, message, open_ai_model)
-                return True
-        return False
-
     @commands.Cog.listener()
     async def on_message(self, message):
         """Event handler called when a message is received."""
+        enable_ai = os.getenv("enabled_ai", 'False').lower() in ('true', '1', 't')
+        open_ai_model = os.getenv('open_ai_model')
         # Ignore messages from bot
         if message.author.bot:
             return
@@ -69,9 +56,9 @@ class ReactionCog(commands.Cog):
         if await self.get_taunt_response_from_bot(message):
             return
 
-        # If a bot is mentioned, it will say hello or answer your question depending on the content of the message
-        if await self.get_reaction_when_bot_is_mentioned(message):
-            return
+        # If the message has content and the bot is mentioned - send it to Open API gateway
+        if self.bot.user.mentioned_in(message):
+            await get_response_from_openai(enable_ai, message, open_ai_model)
 
 
 async def setup(bot):

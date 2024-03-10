@@ -1,14 +1,18 @@
 # -*- coding: utf-8 -*-
+import datetime
 import json
 import logging
 import os
 import random
 import re
+import time
 
 import discord
 import openai
 from discord.ext import commands
 from openai import OpenAI
+
+last_user_message_times = {}
 
 
 def get_tools():
@@ -23,7 +27,7 @@ def get_tools():
                     "properties": {
                         "user_id": {
                             "type": "string",
-                            "description": "User format <@1234567890> or can be a name."
+                            "description": "User ID, always found in format <@1234567890>"
                         }
                     },
                     "required": ["user_id"]
@@ -46,23 +50,15 @@ def get_personality(user_name=None):
             logging.info(f"{selected_user['nick']}'s Personality: {selected_user['personality']}")
             return selected_user['personality']
     else:
-        it_expert_personality = ('I want you to act as an IT Expert. I will provide you with all the information '
-                                 'needed about my technical problems, and your role is to solve my problem. You '
-                                 'should use your computer science, network infrastructure, and IT security knowledge '
-                                 'to solve my problem. Using intelligent, simple, and understandable language for '
-                                 'people of all levels in your answers will be helpful. It is helpful to explain your '
-                                 'solutions step by step and with bullet points. Try to avoid too many technical '
-                                 'details, but use them when necessary. I want you to reply with the solution, '
-                                 'not write any explanations. My first problem is “my laptop gets an error with a '
-                                 'blue screen.”')
+        it_expert_personality = 'Jesteś Ekspertem IT. Jesteś pomocny.'
         return it_expert_personality
 
 
 def get_messages(ai_behaviour: str, message_to_ai):
-    user_id_pattern = re.compile(r'<@!?1214162287259025428>')  # remove bot id from msg
+    user_id_pattern = re.compile(r'<@!?1216369106308169812>')  # remove bot id from msg
     cleaned_content = user_id_pattern.sub('', message_to_ai.content.strip())
-    user_name = get_user_name_from_id(message_to_ai.author.id)
-    prompt = f'Jestem {user_name}.Powiedz mi: {cleaned_content}.'
+    user_name = message_to_ai.author.display_name
+    prompt = f'Im {user_name}.Question: {cleaned_content}.'
     messages = [
         {
             "role": "system",
@@ -70,44 +66,35 @@ def get_messages(ai_behaviour: str, message_to_ai):
         },
         {
             "role": "user",
-            "content": prompt,
+            "content": prompt
         }
     ]
     return messages
 
 
-def get_user_name_from_id(user_id: int):
-    user_names = {
-        266316092794863619: 'testname'
-    }
-    return user_names.get(user_id, 'Cukiereczku')
-
-
 def get_user_activity(guild_context: discord.Guild, user_id: str):
     user_activity = ''
-    if '<@' in user_id or type(user_id) is int:
-        user_id = int(user_id.replace('<@', '').replace('>', ''))
-        user = guild_context.get_member(int(user_id))
-        if user is None or user.activity is None:
-            user_activity = get_custom_activity_per_user()
-            logging.info('User activity 1: None')
-        for activity in user.activities:
-            logging.info(f'User activity 2: {user.activity}')
-            if isinstance(activity, discord.Spotify):
-                user_activity = f'User is listening to {user.activity.title} by {user.activity.artist} on Spotify'
-            elif activity.type == discord.ActivityType.playing:
-                user_activity = f'User is playing {user.activity.name}'
-            elif activity.type == discord.ActivityType.competing:
-                user_activity = f'User is playing {user.activity.name}'
-            elif activity.type == discord.ActivityType.streaming:
-                user_activity = f'User is streaming {user.activity.name}'
-            elif activity.type == discord.ActivityType.custom:
-                user_activity = f'User is making custom action {user.activity.name}'
-            else:
+    if '<@' in user_id:
+        value_inside = user_id.replace('<@', '').replace('>', '')
+        if type(value_inside) is int:
+            user_id = int(value_inside)
+            user = guild_context.get_member(int(user_id))
+            if user is None or user.activity is None:
                 user_activity = get_custom_activity_per_user()
-    else:
-        user_activity = get_custom_activity_per_user()
-    logging.info(f'User activity 3: {user_activity}')
+                logging.info('User activity none: None')
+            for activity in user.activities:
+                logging.info(f'User activity exist: {user.activity}')
+                if isinstance(activity, discord.Spotify):
+                    user_activity = f'User is listening to {user.activity.title} by {user.activity.artist} on Spotify'
+                elif activity.type == discord.ActivityType.playing:
+                    user_activity = f'User is playing {user.activity.name}'
+                elif activity.type == discord.ActivityType.competing:
+                    user_activity = f'User is playing {user.activity.name}'
+                else:
+                    user_activity = get_custom_activity_per_user()
+            return user_activity
+    user_activity = get_custom_activity_per_user()
+    logging.info(f'User activity (not int value): {user_activity}')
     return user_activity
 
 
@@ -121,6 +108,50 @@ def get_custom_activity_per_user():
     activity_location = random.choice(selected_activity['miejsce'])
 
     return f"{activity_type} in {activity_location}"
+
+
+def can_user_send_message(user_id):
+    if user_id not in last_user_message_times:
+        last_user_message_times[user_id] = []
+
+    delay_new_message_per_user = int(os.getenv('open_ai_number_of_msg_per_sec_user'))
+    if last_user_message_times[user_id]:
+        last_user_message_time = last_user_message_times[user_id][-1]
+    else:
+        last_user_message_time = 0
+
+    elapsed_time = time.time() - last_user_message_time
+    if elapsed_time >= delay_new_message_per_user:
+        last_user_message_times[user_id].append(time.time())
+        return True
+    else:
+        return False
+
+
+def can_guild_send_message(guild_id):
+    today = datetime.date.today().strftime("%Y-%m-%d")
+    file_path = f"guild_data_{guild_id}.json"
+    max_number_msg = int(os.getenv('open_ai_max_number_of_messages_per_guild_per_day'))
+    if os.path.exists(file_path):
+        with open(file_path, 'r', encoding='utf-8') as file:
+            try:
+                guild_data = json.load(file)
+            except json.JSONDecodeError:
+                guild_data = {}
+    else:
+        guild_data = {}
+
+    if today not in guild_data:
+        guild_data[today] = 0
+    logging.info(f'max_number_msg = {max_number_msg}')
+    logging.info(f'guild_data[today] = {guild_data[today]}')
+    if guild_data[today] < max_number_msg:
+        guild_data[today] += 1
+        with open(file_path, 'w', encoding='utf-8') as file:
+            json.dump(guild_data, file)
+        return True
+    else:
+        return False
 
 
 class OpenAIService(commands.Cog):
@@ -147,64 +178,80 @@ class OpenAIService(commands.Cog):
             f"Costs: {response.usage.prompt_tokens}+{response.usage.completion_tokens}={response.usage.total_tokens}")
         return response.choices[0].text
 
-    def gpt_35_turbo_0125(self, message):
+    def gpt_35_turbo_0125(self, message, is_tools_enabled):
         openai.api_key = self.open_ai_token
-        response = openai.chat.completions.create(
-            messages=get_messages(self.ai_behaviour, message),
-            model=self.model_ai,
-            max_tokens=self.max_tokens,
-            tools=get_tools(),
-            tool_choice="auto",
-        )
-        logging.info(f"First response from API OpenAI: {response}")
-        logging.info(
-            f"Costs (first call): {response.usage.prompt_tokens}+{response.usage.completion_tokens}={response.usage.total_tokens}")
-
-        available_tools = {
-            'get_user_activity': get_user_activity
-        }
-
-        message_response = response.choices[0].message
-        if message_response.tool_calls:
-            messages = get_messages(self.ai_behaviour, message)
-            messages.append(message_response)
-            for tool_call in message_response.tool_calls:
-                function_name = tool_call.function.name
-                function_to_call = available_tools[function_name]
-                function_args = json.loads(tool_call.function.arguments)
-                function_args["guild_context"] = message.guild
-                function_response = function_to_call(**function_args)
-                messages.append(
-                    {
-                        "tool_call_id": tool_call.id,
-                        "role": "tool",
-                        "name": function_name,
-                        "content": function_response,
-                    }
-                )
+        if is_tools_enabled is True:
             response = openai.chat.completions.create(
+                messages=get_messages(self.ai_behaviour, message),
                 model=self.model_ai,
-                messages=messages,
+                max_tokens=self.max_tokens,
+                tools=get_tools(),
+                tool_choice="auto",
             )
-        llm_response = response.choices[0].message.content
-        logging.info(f"Second response from API OpenAI: {response}")
-        logging.info(
-            f"Costs (second call): {response.usage.prompt_tokens}+{response.usage.completion_tokens}={response.usage.total_tokens}")
-        return llm_response
+            logging.info(f"First response from API OpenAI: {response}")
+            logging.info(
+                f"Costs (first call): {response.usage.prompt_tokens}+{response.usage.completion_tokens}={response.usage.total_tokens}")
+            available_tools = {
+                'get_user_activity': get_user_activity
+            }
+            message_response = response.choices[0].message
+            if message_response.tool_calls:
+                messages = get_messages(self.ai_behaviour, message)
+                messages.append(message_response)
+                for tool_call in message_response.tool_calls:
+                    function_name = tool_call.function.name
+                    function_to_call = available_tools[function_name]
+                    function_args = json.loads(tool_call.function.arguments)
+                    function_args["guild_context"] = message.guild
+                    function_response = function_to_call(**function_args)
+                    messages.append(
+                        {
+                            "tool_call_id": tool_call.id,
+                            "role": "tool",
+                            "name": function_name,
+                            "content": function_response,
+                        }
+                    )
+                response = openai.chat.completions.create(
+                    model=self.model_ai,
+                    messages=messages,
+                )
+                logging.info(f"Second response from API OpenAI: {response}")
+                logging.info(
+                    f"Costs (second call): {response.usage.prompt_tokens}+{response.usage.completion_tokens}={response.usage.total_tokens}")
+                return response.choices[0].message.content
+        else:
+            response = openai.chat.completions.create(
+                messages=get_messages(self.ai_behaviour, message),
+                model=self.model_ai,
+                max_tokens=self.max_tokens,
+            )
+            logging.info(f"Response from API OpenAI: {response}")
+            logging.info(
+                f"Costs (second call): {response.usage.prompt_tokens}+{response.usage.completion_tokens}={response.usage.total_tokens}")
+            return response.choices[0].message.content
 
     def chat_with_gpt(self, message):
         # Send a message to the ChatGPT API and get a response
+        user_id_to_check = message.author.id
+        guild_id = message.guild.id
         try:
-            max_openai_length = 500
+            max_openai_length = 200
             if len(message.content.strip()) > max_openai_length:
                 return None
+            elif not can_user_send_message(user_id_to_check):
+                logging.warning("Too many messages per second. Slow mode on.")
+                return "Poczekaj przed ponownym wysłaniem wiadomości..."
+            elif not can_guild_send_message(guild_id):
+                logging.warning("Maximum number of messages per guild was reached.")
+                return "Nie mozna juz dzisiaj wysłać wiecej wiadomości do OpenAI."
 
             response_from_ai = None
             if 'gpt-3.5-turbo-instruct' in self.model_ai:
                 response_from_ai = self.gpt_35_turbo_instruct(message)
             elif 'gpt-3.5-turbo-0125' in self.model_ai:
-                response_from_ai = self.gpt_35_turbo_0125(message)
+                response_from_ai = self.gpt_35_turbo_0125(message, False)
 
             return response_from_ai
         except Exception as e:
-            logging.error(f"Error during calling OpenAI API e: {e.with_traceback()}")
+            logging.error(f"Error during calling OpenAI API. e: {e}")
