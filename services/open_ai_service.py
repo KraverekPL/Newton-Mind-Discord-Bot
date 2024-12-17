@@ -38,22 +38,6 @@ def get_tools():
     return tools
 
 
-def get_personality(user_name=None):
-    file_path = 'resources/user_personalities.json'
-    with open(file_path, 'r', encoding='utf-8') as file:
-        data = json.load(file)
-
-    random_user = random.choice(data['users'])
-    if user_name:
-        selected_user = next((user for user in data['users'] if user['nick'].lower() == user_name.lower()), None)
-        if selected_user:
-            logging.info(f"{selected_user['nick']}'s Personality: {selected_user['personality']}")
-            return selected_user['personality']
-    else:
-        it_expert_personality = 'Jesteś Ekspertem IT. Jesteś pomocny. Odpisujesz krótko i na temat.'
-        return it_expert_personality
-
-
 def get_messages(ai_behaviour: str, message_to_ai):
     user_id_pattern = re.compile(r'<@!?1216369106308169812>')  # remove bot id from msg
     cleaned_content = user_id_pattern.sub('', message_to_ai.content.strip())
@@ -159,7 +143,7 @@ class OpenAIService(commands.Cog):
         self.model_ai = model_ai
 
     open_ai_token = os.getenv('open_ai_token')
-    ai_behaviour = get_personality()
+    ai_behaviour = os.getenv('ai_behaviour')
     top_p = float(os.getenv('open_ai_top_p'))
     max_tokens = int(os.getenv('open_ai_max_tokens'))
     temperature = float(os.getenv('open_ai_temperature'))

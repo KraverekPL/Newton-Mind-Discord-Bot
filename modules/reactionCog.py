@@ -43,6 +43,7 @@ class ReactionCog(commands.Cog):
                     logging.info(f"Response for scary taunt a bot with {word}:{rng_response_for_scary_taunt}")
                     return True
         return False
+
     @commands.Cog.listener()
     async def on_message(self, message):
         """Event handler called when a message is received."""
